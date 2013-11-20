@@ -76,7 +76,7 @@ sandworm.play = function play() {
     return;
   }
 
-  for (var songRep = 0; songRep < 2; ++songRep) {
+  for (var songRep = 0; songRep < 200; ++songRep) {
     this.playOnLoad = false;
     MIDI.programChange(0, 0);
 
