@@ -22,15 +22,17 @@ sandworm.onInstrumentsLoaded = function onInstrumentsLoaded() {
 };
 
 sandworm.play = function play() {
-  var delays = [0, 0]; // One per channel;
+  var delays = [0, 0]; // One per channel.
 
   function playNote(note, channel) {
     MIDI.noteOn(channel, note.pitch, note.velocity, delays[channel]);
+    // MIDI.noteOff(channel, note.pitch, delays[channel] + note.duration);
+
     delays[channel] += note.duration;
   }
 
   var spewerE = createRiffSpewer({
-    beatSpan: 8, //512,
+    beatSpan: 16, //512,
     beatWobble: 0,
     rootPitch: 28, // E
     pitchRange: [28, 28 + 48],
@@ -39,7 +41,7 @@ sandworm.play = function play() {
   });
 
   var spewerA = createRiffSpewer({
-    beatSpan: 8, //512,
+    beatSpan: 16, //512,
     beatWobble: 0,
     rootPitch: 33, // A
     pitchRange: [33 - 24, 33 + 12],
@@ -48,7 +50,7 @@ sandworm.play = function play() {
   });
 
   var spewerB = createRiffSpewer({
-    beatSpan: 8, //512,
+    beatSpan: 16, //512,
     beatWobble: 0,
     rootPitch: 35 + 24, // B
     pitchRange: [35 - 12, 35 + 24],
@@ -76,15 +78,17 @@ sandworm.play = function play() {
     return;
   }
 
-  for (var songRep = 0; songRep < 200; ++songRep) {
-    this.playOnLoad = false;
-    MIDI.programChange(0, 0);
+  this.playOnLoad = false;
 
+  var songRepsQueued = 0;
+  var repLimit = 20;
+
+  function playRep() {
     for (var spewerIndex = 0; spewerIndex < spewerQueue.length; ++spewerIndex) {
       var spewer1 = spewerQueue[spewerIndex].spewer1;
       var spewer2 = spewerQueue[spewerIndex].spewer2;
 
-      for (var spewerRep = 0; spewerRep < 4; ++spewerRep) {
+      for (var spewerRep = 0; spewerRep < 2; ++spewerRep) {
         var riff = spewer1.spew();
         var riff2 = null;
         if (spewer2) {
@@ -103,8 +107,16 @@ sandworm.play = function play() {
         }
       }
     }
+
+    ++songRepsQueued;
+    // Doing this to avoid queuing (play with a delay) more than ~256 notes at
+    // a time, which will crap up Chrome's audio playback.
+    if (songRepsQueued < repLimit) {
+      setTimeout(playRep, delays[0] * 1000);
+    }
   }
 
+  playRep();
 };
 
 // scale should have an entry for all 12 half-steps, each either null or not 
@@ -125,7 +137,7 @@ function fitToPitch(pitch, scale) {
   var offset = pitch % 12;
   var base = ~~(pitch / 12) * 12;
   var newOffset = findClosest(scale, offset);
-  console.log('In:', offset, 'Out:', newOffset);
+  // console.log('In:', offset, 'Out:', newOffset);
   return base + newOffset;
 }
 
