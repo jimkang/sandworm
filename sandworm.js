@@ -17,7 +17,8 @@ sandworm.onInstrumentsLoaded = function onInstrumentsLoaded() {
   if (this.playOnLoad) {
     this.play();
   }
-  document.querySelector('#message').innerText = 'Instruments loaded.';
+  document.querySelector('#message').innerText = 
+    'Instruments loaded. Unleashing notes!';
 };
 
 sandworm.play = function play() {
