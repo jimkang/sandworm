@@ -89,7 +89,7 @@ function createSandworm() {
       beatSpan: 12,
       beatWobble: 0,
       pitchChoices: versePitches,
-      durationRange: [60 / 160 / 4, 0],
+      durationRange: [60 / 170 / 4, 0],
       pitchTransformer: Shift(12),
     });
 
@@ -97,7 +97,7 @@ function createSandworm() {
       beatSpan: 12,
       beatWobble: 0,
       pitchChoices: versePitches,
-      durationRange: [60 / 160 / 4, 0],
+      durationRange: [60 / 170 / 4, 0],
       pitchTransformer: Shift(19),
     });
 
@@ -105,14 +105,14 @@ function createSandworm() {
       beatSpan: 8,
       beatWobble: 0,
       pitchChoices: chorusPitches,
-      durationRange: [60 / 160 / 2, 0],
+      durationRange: [60 / 170 / 2, 0],
     });
 
     var spewerRandOctaveChorus = createRiffSpewer({
       beatSpan: 8,
       beatWobble: 0,
       pitchChoices: chorusPitches,
-      durationRange: [60 / 160 / 2, 0],
+      durationRange: [60 / 170 / 2, 0],
       pitchTransformer: randomOctave,
     });
 
@@ -120,7 +120,7 @@ function createSandworm() {
       beatSpan: 8,
       beatWobble: 0,
       pitchChoices: chorusPitches,
-      durationRange: [60 / 160 / 2, 0],
+      durationRange: [60 / 170 / 2, 0],
       pitchTransformer: Shift(12),
     });
 
@@ -128,7 +128,7 @@ function createSandworm() {
       beatSpan: 1,
       pitchChoices: [26],
       beatWobble: 0,
-      durationRange: [(160 / 60) * 8, 0],
+      durationRange: [(170 / 60) * 8, 0],
     });
 
     var spewerQueue = [
