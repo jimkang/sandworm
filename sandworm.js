@@ -1,3 +1,27 @@
+var versePitches = [26, 26, 26, 26, 28, 28, 33];
+var chorusPitches = [
+  26,
+  26,
+  26,
+  26,
+  26,
+  26,
+  26,
+  26,
+  26,
+  26,
+  26,
+  26,
+  30,
+  30,
+  30,
+  30,
+  32,
+  37,
+  37,
+  42,
+];
+
 function createSandworm() {
   var sandworm = {
     instrumentsLoaded: false,
@@ -18,7 +42,9 @@ function createSandworm() {
       this.play();
     }
     document.querySelector("#message").innerText = "Instruments loaded.";
-    document.getElementById("play-button").addEventListener("click", this.play);
+    document
+      .getElementById("play-button")
+      .addEventListener("click", this.play.bind(this)); // This is why I stopped using this.
   };
 
   sandworm.play = function play() {
@@ -31,45 +57,105 @@ function createSandworm() {
       delays[channel] += note.duration;
     }
 
-    var spewerE = createRiffSpewer({
-      beatSpan: 16, //512,
+    //var spewerE = createRiffSpewer({
+    //beatSpan: 16, //512,
+    //beatWobble: 0,
+    //rootPitch: 28, // E
+    //pitchRange: [28, 28 + 48],
+    //durationRange: [1, 4],
+    //pitchTransformer: majorKeyFitter(28),
+    //});
+    //
+    //var spewerA = createRiffSpewer({
+    //beatSpan: 16, //512,
+    //beatWobble: 0,
+    //rootPitch: 33, // A
+    //pitchRange: [33 - 24, 33 + 12],
+    //durationRange: [1, 4],
+    //pitchTransformer: majorKeyFitter(33),
+    //});
+    //
+    //var spewerB = createRiffSpewer({
+    //beatSpan: 16, //512,
+    //beatWobble: 0,
+    //rootPitch: 35 + 24, // B
+    //pitchRange: [35 - 12, 35 + 24],
+    //durationRange: [1, 4],
+    //pitchTransformer: majorKeyFitter(35),
+    //});
+    //
+
+    var spewerVerse = createRiffSpewer({
+      beatSpan: 12,
       beatWobble: 0,
-      rootPitch: 28, // E
-      pitchRange: [28, 28 + 48],
-      durationRange: [1, 4],
-      pitchTransformer: majorKeyFitter(28),
+      pitchChoices: versePitches,
+      durationRange: [60 / 160 / 4, 0],
+      pitchTransformer: Shift(12),
     });
 
-    var spewerA = createRiffSpewer({
-      beatSpan: 16, //512,
+    var spewerVerseHigh = createRiffSpewer({
+      beatSpan: 12,
       beatWobble: 0,
-      rootPitch: 33, // A
-      pitchRange: [33 - 24, 33 + 12],
-      durationRange: [1, 4],
-      pitchTransformer: majorKeyFitter(33),
+      pitchChoices: versePitches,
+      durationRange: [60 / 160 / 4, 0],
+      pitchTransformer: Shift(19),
     });
 
-    var spewerB = createRiffSpewer({
-      beatSpan: 16, //512,
+    var spewerChorus = createRiffSpewer({
+      beatSpan: 8,
       beatWobble: 0,
-      rootPitch: 35 + 24, // B
-      pitchRange: [35 - 12, 35 + 24],
-      durationRange: [1, 4],
-      pitchTransformer: majorKeyFitter(35),
+      pitchChoices: chorusPitches,
+      durationRange: [60 / 160 / 2, 0],
+    });
+
+    var spewerRandOctaveChorus = createRiffSpewer({
+      beatSpan: 8,
+      beatWobble: 0,
+      pitchChoices: chorusPitches,
+      durationRange: [60 / 160 / 2, 0],
+      pitchTransformer: randomOctave,
+    });
+
+    var spewerHighChorus = createRiffSpewer({
+      beatSpan: 8,
+      beatWobble: 0,
+      pitchChoices: chorusPitches,
+      durationRange: [60 / 160 / 2, 0],
+      pitchTransformer: Shift(12),
+    });
+
+    var spewerLongNote = createRiffSpewer({
+      beatSpan: 1,
+      pitchChoices: [26],
+      beatWobble: 0,
+      durationRange: [(160 / 60) * 8, 0],
     });
 
     var spewerQueue = [
       {
-        spewer1: spewerA,
-        spewer2: spewerB,
+        spewer1: spewerChorus,
+        spewer2: spewerChorus,
+      },
+      { spewer1: spewerLongNote },
+      {
+        spewer1: spewerVerse,
+        spewer2: spewerVerse,
       },
       {
-        spewer1: spewerE,
-        spewer2: spewerB,
+        spewer1: spewerChorus,
+        spewer2: spewerChorus,
       },
       {
-        spewer1: spewerE,
-        spewer2: spewerE,
+        spewer1: spewerVerse,
+        spewer2: spewerRandOctaveChorus,
+      },
+      {
+        spewer1: spewerVerse,
+        spewer2: spewerVerseHigh,
+      },
+      {
+        spewer1: spewerChorus,
+        spewer2: spewerHighChorus,
       },
     ];
 
@@ -81,7 +167,6 @@ function createSandworm() {
     this.playOnLoad = false;
 
     var songRepsQueued = 0;
-    var repLimit = 20;
 
     function playRep() {
       for (
@@ -103,8 +188,8 @@ function createSandworm() {
             for (var noteIndex = 0; noteIndex < riff.length; ++noteIndex) {
               var note1 = riff[noteIndex];
               playNote(note1, 0);
-              if (riff2) {
-                var note2 = riff2[noteIndex];
+              if (riff2 && noteIndex < riff2.length) {
+                let note2 = riff2[noteIndex];
                 playNote(note2, 1);
               }
             }
@@ -113,11 +198,6 @@ function createSandworm() {
       }
 
       ++songRepsQueued;
-      // Doing this to avoid queuing (play with a delay) more than ~256 notes at
-      // a time, which will crap up Chrome's audio playback.
-      if (songRepsQueued < repLimit) {
-        setTimeout(playRep, delays[0] * 1000);
-      }
     }
 
     playRep();
@@ -161,9 +241,20 @@ function createSandworm() {
     return fitToMajorKey;
   }
 
+  function Shift(delta) {
+    return shift;
+
+    function shift(pitch) {
+      return pitch + delta;
+    }
+  }
+
+  function randomOctave(pitch) {
+    return pitch + 12 * (Math.floor(Math.random() * 3) + 1);
+  }
+
   return sandworm;
 }
 
 var sandworm = createSandworm();
 sandworm.init();
-sandworm.play();
